@@ -429,20 +429,29 @@
       <div class="text-xs uppercase tracking-widest text-on-surface/40 font-bold mb-2">📦 Hardware listo</div>
       <h3 class="text-xl font-bold uppercase tracking-tighter mb-3">Mac Mini + OpenClaw</h3>
       <p class="text-on-surface/50 text-sm mb-5">Recibís tu Mac Mini con OpenClaw preinstalado. Enchufás y ya tenés tu IA funcionando. Envío a todo México.</p>
-      <!-- Variantes de hardware -->
-      <div class="space-y-1.5 mb-5">
-        <div class="flex justify-between items-center px-3 py-2.5 bg-primary text-on-primary">
-          <span class="text-xs font-bold uppercase">M2 · 16GB</span>
+      <!-- Variantes de hardware (seleccionables) -->
+      <div class="space-y-1.5 mb-5" id="macmini-variants">
+        <label class="flex justify-between items-center px-3 py-2.5 border-2 border-primary bg-primary/10 cursor-pointer transition-all macmini-option selected-variant" data-price="$20,500 MXN" data-label="Mac Mini M2 · 16GB">
+          <div class="flex items-center gap-2">
+            <input type="radio" name="macmini_plan" value="M2" checked class="accent-red-500">
+            <span class="text-xs font-bold uppercase">M2 · 16GB</span>
+          </div>
           <span class="text-sm font-black">$20,500 MXN</span>
-        </div>
-        <div class="flex justify-between items-center px-3 py-2.5 border border-white/10">
-          <span class="text-xs font-bold uppercase text-on-surface/60">M4 Pro · 16GB</span>
-          <span class="text-sm font-bold text-on-surface/60">$26,500 MXN</span>
-        </div>
-        <div class="flex justify-between items-center px-3 py-2.5 border border-white/10">
-          <span class="text-xs font-bold uppercase text-on-surface/60">M4 Pro · GPU 24GB</span>
-          <span class="text-sm font-bold text-on-surface/60">desde $44,500 MXN</span>
-        </div>
+        </label>
+        <label class="flex justify-between items-center px-3 py-2.5 border border-white/10 cursor-pointer transition-all macmini-option" data-price="$26,500 MXN" data-label="Mac Mini M4 Pro · 16GB">
+          <div class="flex items-center gap-2">
+            <input type="radio" name="macmini_plan" value="M4Pro16" class="accent-red-500">
+            <span class="text-xs font-bold uppercase text-on-surface/80">M4 Pro · 16GB</span>
+          </div>
+          <span class="text-sm font-bold text-on-surface/80">$26,500 MXN</span>
+        </label>
+        <label class="flex justify-between items-center px-3 py-2.5 border border-white/10 cursor-pointer transition-all macmini-option" data-price="desde $44,500 MXN" data-label="Mac Mini M4 Pro · GPU 24GB">
+          <div class="flex items-center gap-2">
+            <input type="radio" name="macmini_plan" value="M4Pro24" class="accent-red-500">
+            <span class="text-xs font-bold uppercase text-on-surface/80">M4 Pro · GPU 24GB</span>
+          </div>
+          <span class="text-sm font-bold text-on-surface/80">desde $44,500 MXN</span>
+        </label>
       </div>
       <ul class="space-y-2 mb-8 text-sm text-on-surface/70 flex-grow">
         <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-primary mt-1.5 flex-shrink-0"></div>OpenClaw + WhatsApp listo</li>
@@ -450,7 +459,7 @@
         <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-primary mt-1.5 flex-shrink-0"></div>3 meses de soporte incluido</li>
         <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-primary mt-1.5 flex-shrink-0"></div>Onboarding remoto 1:1</li>
       </ul>
-      <button onclick="openUpsell('Mac Mini + OpenClaw', 'desde $20,500 MXN', 'STRIPE_MACMINI', 'STRIPE_MACMINI_MAINT')" class="w-full border border-white/10 py-4 uppercase font-bold text-xs tracking-widest hover:bg-white hover:text-black transition-all">Comprar →</button>
+      <button id="macmini-buy-btn" onclick="openMacMiniUpsellPlan()" class="w-full border border-primary bg-primary/10 text-on-surface py-4 uppercase font-bold text-xs tracking-widest hover:bg-primary hover:text-on-primary transition-all">Comprar <span id="macmini-btn-price">$20,500 MXN</span> →</button>
     </div>
 
   </div>
@@ -735,11 +744,28 @@
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeUpsell(); });
 
-  function openMacMiniUpsell() {
-    var radios = document.querySelectorAll('input[name=macmini_model]');
-    var selected = Array.from(radios).find(function(r){ return r.checked; });
-    if (!selected) { alert('Seleccioná un modelo de Mac Mini'); return; }
-    openUpsell('Mac Mini ' + selected.value, 'desde $20,500 MXN', 'STRIPE_MACMINI', 'STRIPE_MACMINI_MAINT');
+  // Mac Mini plan selector en la sección de precios
+  document.addEventListener('DOMContentLoaded', function() {
+    var options = document.querySelectorAll('.macmini-option');
+    var btnPrice = document.getElementById('macmini-btn-price');
+    options.forEach(function(opt) {
+      opt.addEventListener('click', function() {
+        options.forEach(function(o) {
+          o.classList.remove('border-primary', 'bg-primary/10', 'selected-variant');
+          o.classList.add('border-white/10');
+        });
+        this.classList.add('border-primary', 'bg-primary/10', 'selected-variant');
+        this.classList.remove('border-white/10');
+        if (btnPrice) btnPrice.textContent = this.dataset.price;
+      });
+    });
+  });
+
+  function openMacMiniUpsellPlan() {
+    var selected = document.querySelector('.macmini-option.selected-variant');
+    var label = selected ? selected.dataset.label : 'Mac Mini + OpenClaw';
+    var price = selected ? selected.dataset.price : 'desde $20,500 MXN';
+    openUpsell(label, price, 'STRIPE_MACMINI', 'STRIPE_MACMINI_MAINT');
   }
 </script>
 
